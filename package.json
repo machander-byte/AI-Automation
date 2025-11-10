@@ -1,0 +1,33 @@
+{
+  "name": "ai-automation",
+  "version": "0.2.0",
+  "description": "Generate tech news posters with an easy-to-run Node.js + Express workflow.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "dev": "node --watch ./src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/machander-byte/AI-Automation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/machander-byte/AI-Automation/issues"
+  },
+  "homepage": "https://github.com/machander-byte/AI-Automation#readme",
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "better-sqlite3": "^12.4.1",
+    "canvas": "^3.2.0",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "jsdom": "^27.1.0",
+    "node-cron": "^4.2.1",
+    "rss-parser": "^3.13.0"
+  }
+}

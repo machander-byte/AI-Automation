@@ -1,0 +1,15 @@
+node_modules
+.venv
+.git
+.gitignore
+.vscode
+tmp-server.out.log
+tmp-server.err.log
+*.log
+out
+data/seen.db
+.env
+.env.local
+coverage
+dist
+*.sqlite

@@ -9,6 +9,8 @@ __pycache__/
 .venv_*/
 env/
 venv/
+node_modules/
+npm-debug.log*
 
 # VS Code settings for this subfolder (use root .vscode)
 .vscode/

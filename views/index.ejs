@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= brandName %> · Tech Posters</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background-color: #0b1020;
+        color: #dce3ff;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 2.5rem 1.5rem 4rem;
+      }
+      h1 {
+        margin: 0;
+        font-size: 2.75rem;
+        color: #fff;
+      }
+      p.lead {
+        margin: 0.5rem 0 1.5rem;
+        color: #9ea7c3;
+      }
+      form {
+        display: inline-block;
+        margin-right: 1rem;
+      }
+      button {
+        padding: 0.85rem 1.8rem;
+        font-size: 1rem;
+        background: linear-gradient(135deg, #4169e1, #5b8df1);
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      button:disabled {
+        cursor: wait;
+        opacity: 0.7;
+      }
+      button:not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 25px rgba(65, 105, 225, 0.2);
+      }
+      .status {
+        font-size: 0.95rem;
+        color: #7482ad;
+      }
+      section.posters {
+        margin-top: 3rem;
+        display: grid;
+        gap: 1.5rem;
+      }
+      article.poster {
+        background-color: rgba(17, 24, 48, 0.85);
+        border: 1px solid rgba(116, 130, 173, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 20px 40px rgba(7, 10, 25, 0.4);
+      }
+      article h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.45rem;
+        color: #fff;
+      }
+      article ul {
+        margin: 0.75rem 0;
+        padding-left: 1.4rem;
+        color: #dce3ff;
+      }
+      article ul li {
+        margin-bottom: 0.4rem;
+      }
+      article footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+        color: #9ea7c3;
+      }
+      article footer a {
+        color: #81a0ff;
+        text-decoration: none;
+      }
+      article img {
+        margin-top: 1rem;
+        max-width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(116, 130, 173, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1><%= brandName %> · Tech Posters</h1>
+        <p class="lead">
+          Fetch the latest tech headlines, summarise them, and generate share-ready posters.
+        </p>
+      </header>
+
+      <div class="actions">
+        <form method="POST" action="/run">
+          <button type="submit" <% if (running) { %>disabled<% } %>>
+            <% if (running) { %>Generating…<% } else { %>Generate Posters Now<% } %>
+          </button>
+        </form>
+        <span class="status">Last run: <%= lastRunAt %></span>
+      </div>
+
+      <section class="posters">
+        <% if (!lastResults.length) { %>
+          <p>No posters generated yet. Click the button above to run the pipeline.</p>
+        <% } else { %>
+          <% lastResults.forEach(function(poster) { %>
+            <article class="poster">
+              <h2><%= poster.title %></h2>
+              <p><strong>Source:</strong> <%= poster.source || 'Tech News' %></p>
+              <ul>
+                <% poster.bullets.forEach(function(bullet){ %>
+                  <li><%= bullet %></li>
+                <% }) %>
+              </ul>
+              <footer>
+                <span>Generated at <%= poster.generatedAtDisplay %></span>
+                <a href="<%= poster.url %>" target="_blank" rel="noopener">Read article</a>
+                <% if (poster.imageHref) { %>
+                  <a href="<%= poster.imageHref %>" target="_blank" rel="noopener">Download poster</a>
+                <% } %>
+              </footer>
+              <% if (poster.imageHref) { %>
+                <img src="<%= poster.imageHref %>" alt="<%= poster.title %>" loading="lazy" />
+              <% } %>
+            </article>
+          <% }) %>
+        <% } %>
+      </section>
+    </main>
+  </body>
+</html>
