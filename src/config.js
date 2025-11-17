@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
+import { DEFAULT_TEMPLATE_ID, normalizeTemplateId } from './templates.js';
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ const parseList = (value, fallback = []) => {
     .filter(Boolean);
 };
 
+const posterTemplate = normalizeTemplateId(process.env.POSTER_TEMPLATE, DEFAULT_TEMPLATE_ID);
+
 const config = {
   projectRoot,
   port: parseNumber(process.env.PORT, 8080),
@@ -37,6 +40,9 @@ const config = {
   footerText: process.env.FOOTER_TEXT || 'Fresh tech highlights for you',
   hashtags: process.env.HASHTAGS || '#AI #Cloud #Security #Dev #TechNews',
   posterFormat: (process.env.POSTER_FORMAT || 'square').toLowerCase(),
+  posterTemplate,
+  slackWebhookUrl: process.env.SLACK_WEBHOOK_URL || '',
+  webhookUrl: process.env.WEBHOOK_URL || '',
   maxPosts: clamp(parseNumber(process.env.MAX_POSTS, 2), 1, 5),
   lookbackHours: clamp(parseNumber(process.env.LOOKBACK_HOURS, 24), 1, 168),
   outputDir: path.resolve(projectRoot, process.env.OUTPUT_DIR || 'out'),

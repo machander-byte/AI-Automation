@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= brandName %> · Tech Posters</title>
+    <title><%= brandName %> - Tech Posters</title>
     <style>
       :root {
         color-scheme: dark;
@@ -28,9 +28,22 @@
         margin: 0.5rem 0 1.5rem;
         color: #9ea7c3;
       }
-      form {
-        display: inline-block;
-        margin-right: 1rem;
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      form.run-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 1rem;
+        border-radius: 16px;
+        border: 1px solid rgba(116, 130, 173, 0.35);
+        background: rgba(11, 16, 32, 0.6);
+        min-width: min(100%, 640px);
       }
       button {
         padding: 0.85rem 1.8rem;
@@ -50,9 +63,188 @@
         transform: translateY(-1px);
         box-shadow: 0 10px 25px rgba(65, 105, 225, 0.2);
       }
+      .template-picker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .template-option {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid rgba(116, 130, 173, 0.4);
+        background: rgba(17, 24, 48, 0.7);
+        font-size: 0.9rem;
+      }
+      .template-option input {
+        accent-color: #5b8df1;
+      }
+      .inputs-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        align-items: flex-end;
+      }
+      .number-input {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        font-size: 0.85rem;
+        color: #9ea7c3;
+      }
+      .number-input input {
+        width: 90px;
+        padding: 0.4rem 0.65rem;
+        border-radius: 999px;
+        border: 1px solid rgba(116, 130, 173, 0.4);
+        background: rgba(17, 24, 48, 0.7);
+        color: #fff;
+      }
       .status {
         font-size: 0.95rem;
         color: #7482ad;
+      }
+      .download-link {
+        color: #81a0ff;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .template-note {
+        margin: 0;
+        color: #7482ad;
+        font-size: 0.95rem;
+      }
+      section.template-gallery {
+        margin: 1.5rem 0 0;
+      }
+      section.template-gallery h2 {
+        margin: 0 0 0.4rem;
+        font-size: 1.4rem;
+      }
+      section.template-gallery p {
+        margin: 0 0 1rem;
+        color: #9ea7c3;
+        font-size: 0.95rem;
+      }
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.25rem;
+      }
+      .gallery-card {
+        background: rgba(17, 24, 48, 0.65);
+        border: 1px solid rgba(116, 130, 173, 0.3);
+        border-radius: 18px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .gallery-card header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #fff;
+      }
+      .gallery-card header p {
+        margin: 0.25rem 0 0;
+        color: #9ea7c3;
+        font-size: 0.9rem;
+      }
+      .gallery-card img {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(116, 130, 173, 0.35);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+      }
+      .font-meta {
+        font-size: 0.85rem;
+        color: #9ea7c3;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+      .swatches {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.3);
+      }
+      section.history {
+        margin: 2.5rem 0 0;
+      }
+      .history-list {
+        display: grid;
+        gap: 0.8rem;
+      }
+      .history-card {
+        padding: 1rem;
+        border-radius: 14px;
+        background: rgba(17, 24, 48, 0.75);
+        border: 1px solid rgba(116, 130, 173, 0.3);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: space-between;
+      }
+      .history-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+      .history-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        color: #9ea7c3;
+      }
+      .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.2rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid rgba(116, 130, 173, 0.4);
+        font-size: 0.85rem;
+        color: #dce3ff;
+      }
+      .poster-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin: 0.6rem 0;
+      }
+      .flag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.7rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .flag-duplicate {
+        background: rgba(234, 179, 8, 0.15);
+        color: #facc15;
+        border: 1px solid rgba(250, 204, 21, 0.4);
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
       }
       section.posters {
         margin-top: 3rem;
@@ -97,25 +289,124 @@
         border-radius: 12px;
         border: 1px solid rgba(116, 130, 173, 0.3);
       }
+      .template-pill {
+        background: rgba(129, 160, 255, 0.12);
+        border: 1px solid rgba(129, 160, 255, 0.25);
+        border-radius: 999px;
+        padding: 0.25rem 0.85rem;
+        font-size: 0.85rem;
+        color: #9ea7c3;
+      }
     </style>
   </head>
   <body>
     <main>
       <header>
-        <h1><%= brandName %> · Tech Posters</h1>
+        <h1><%= brandName %> Tech Posters</h1>
         <p class="lead">
           Fetch the latest tech headlines, summarise them, and generate share-ready posters.
         </p>
       </header>
 
       <div class="actions">
-        <form method="POST" action="/run">
-          <button type="submit" <% if (running) { %>disabled<% } %>>
-            <% if (running) { %>Generating…<% } else { %>Generate Posters Now<% } %>
-          </button>
+        <form method="POST" action="/run" class="run-form">
+          <div>
+            <strong>Templates</strong>
+            <div class="template-picker">
+              <% templateOptions.forEach(function(option) { %>
+                <label class="template-option">
+                  <input
+                    type="checkbox"
+                    name="templates"
+                    value="<%= option.id %>"
+                    <% if (selectedTemplates.includes(option.id)) { %>checked<% } %>
+                  />
+                  <span><%= option.label %></span>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+          <div class="inputs-row">
+            <div class="number-input">
+              <label for="maxPosts">Posts per run</label>
+              <input
+                id="maxPosts"
+                type="number"
+                name="maxPosts"
+                min="1"
+                max="<%= maxPostsLimit %>"
+                value="<%= lastMaxPosts || maxPostsLimit %>"
+              />
+            </div>
+            <button type="submit" <% if (running) { %>disabled<% } %>>
+              <% if (running) { %>Generating...<% } else { %>Generate Posters Now<% } %>
+            </button>
+          </div>
         </form>
-        <span class="status">Last run: <%= lastRunAt %></span>
+        <div>
+          <span class="status">Last run: <%= lastRunAt %></span><br />
+          <% if (hasResults) { %>
+            <a class="download-link" href="/bundle/latest.zip">Download latest bundle</a>
+          <% } %>
+        </div>
       </div>
+      <p class="template-note">
+        Active templates: <strong><%= selectedTemplateLabels.join(', ') %></strong>
+      </p>
+      <section class="template-gallery">
+        <h2>Template Gallery</h2>
+        <p>Preview each poster skin, font stack, and palette before running a batch.</p>
+        <div class="gallery-grid">
+          <% templateOptions.forEach(function(option) { %>
+            <article class="gallery-card">
+              <header>
+                <h3><%= option.label %></h3>
+                <p><%= option.description %></p>
+              </header>
+              <img src="/demo/<%= option.id %>?v=<%= previewVersion %>" alt="<%= option.label %> preview" loading="lazy" />
+              <div class="font-meta">
+                <span><strong>Title:</strong> <%= (option.fonts && option.fonts.title) || 'PosterTitle stack' %></span>
+                <span><strong>Body:</strong> <%= (option.fonts && option.fonts.body) || 'PosterBody stack' %></span>
+                <span><strong>Bullet:</strong> <%= option.bulletPrefix || '&bull;' %></span>
+              </div>
+              <% if (option.colors) { %>
+                <div class="swatches">
+                  <% Object.entries(option.colors).slice(0, 5).forEach(function(entry) { %>
+                    <% const key = entry[0]; const value = entry[1]; %>
+                    <span class="swatch" style="background:<%= value %>;" title="<%= key %>: <%= value %>"></span>
+                  <% }) %>
+                </div>
+              <% } %>
+            </article>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="history">
+        <h2>Recent Runs</h2>
+        <% if (!runHistory.length) { %>
+          <p class="status">No run history yet.</p>
+        <% } else { %>
+          <div class="history-list">
+            <% runHistory.forEach(function(run) { %>
+              <article class="history-card">
+                <div class="history-info">
+                  <strong><%= run.id %></strong>
+                  <span><%= run.completedAtDisplay %></span>
+                  <div class="history-meta">
+                    <span>Templates: <%= run.templates.join(', ') || 'n/a' %></span>
+                    <span>Posts limit: <%= run.maxPosts || 'n/a' %></span>
+                  </div>
+                </div>
+                <div class="history-meta">
+                  <span class="meta-pill">Posters: <%= run.count %></span>
+                  <span class="meta-pill">Avg quality: <%= run.averageQuality ?? 'n/a' %></span>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        <% } %>
+      </section>
 
       <section class="posters">
         <% if (!lastResults.length) { %>
@@ -125,6 +416,14 @@
             <article class="poster">
               <h2><%= poster.title %></h2>
               <p><strong>Source:</strong> <%= poster.source || 'Tech News' %></p>
+              <div class="poster-meta">
+                <span class="meta-pill">Quality: <%= poster.analysis?.qualityScore ?? 'n/a' %></span>
+                <span class="meta-pill">Words: <%= poster.analysis?.wordCount ?? 'n/a' %></span>
+                <span class="meta-pill">Hours old: <%= poster.analysis?.hoursOld ?? 'n/a' %></span>
+              </div>
+              <% if (poster.duplicateOf) { %>
+                <span class="flag flag-duplicate">Possible duplicate</span>
+              <% } %>
               <ul>
                 <% poster.bullets.forEach(function(bullet){ %>
                   <li><%= bullet %></li>
@@ -132,6 +431,7 @@
               </ul>
               <footer>
                 <span>Generated at <%= poster.generatedAtDisplay %></span>
+                <span class="template-pill">Template: <%= poster.templateLabel || poster.template || 'Unknown' %></span>
                 <a href="<%= poster.url %>" target="_blank" rel="noopener">Read article</a>
                 <% if (poster.imageHref) { %>
                   <a href="<%= poster.imageHref %>" target="_blank" rel="noopener">Download poster</a>

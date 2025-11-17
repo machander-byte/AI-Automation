@@ -15,7 +15,7 @@ npm run dev   # or: npm start
 ```
 
 Then open <http://localhost:8080>. Hit **Generate Posters Now** to run the pipeline once. Posters are written to `out/` and served at `/generated/<filename>.png`.
-
+cd
 ## Configuration
 
 Create a `.env` (copy from `.env.example`) to override defaults:
@@ -27,8 +27,9 @@ Create a `.env` (copy from `.env.example`) to override defaults:
 | `LOGO_PATH` | Optional logo overlay path | `assets/logo.png` |
 | `FOOTER_TEXT` | Footer line above hashtags | `Fresh tech highlights for you` |
 | `HASHTAGS` | Hashtag line beneath the footer | `#AI #Cloud #Security #Dev #TechNews` |
-| `POSTER_FORMAT` | `square` (1080×1080) or `landscape` (1200×627) | `square` |
-| `MAX_POSTS` | Posters per run (1‒5) | `2` |
+| `POSTER_FORMAT` | `square` (1080x1080) or `landscape` (1200x627) | `square` |
+| `POSTER_TEMPLATE` | Poster style preset (`midnight`, `aurora`, `slate`, `sunrise`, `matrix`, `paper`) | `midnight` |
+| `MAX_POSTS` | Posters per run (1-5) | `2` |
 | `LOOKBACK_HOURS` | Ignore news older than this window | `24` |
 | `OUTPUT_DIR` | Where images are written | `out` |
 | `DATA_DIR` | Location for the dedupe cache (`seen.db`) | `data` |
@@ -38,6 +39,47 @@ Create a `.env` (copy from `.env.example`) to override defaults:
 | `RSS_FEEDS` | Comma-separated list of RSS URLs | Verge, Ars Technica, Wired |
 
 The dedupe store uses SQLite (`better-sqlite3`). Delete `data/seen.db` if you want to reprocess everything.
+
+### Template presets
+
+You can pick a template directly from the homepage before you click **Generate Posters Now**, or set a default via `POSTER_TEMPLATE` in `.env`. The bundled presets are:
+
+- `midnight`: deep navy with neon bloom and rounded bullets.
+- `aurora`: purple/teal gradient with wave overlays and glowing grid.
+- `slate`: news-room inspired, serif headlines on a bright canvas.
+- `sunrise`: warm coral gradient with translucent glow accents.
+- `matrix`: synthwave-inspired black glass with neon grid + monospace fonts.
+- `paper`: retro newsprint texture with high-contrast serif typography.
+
+Schedulers and Docker deployments follow whatever `POSTER_TEMPLATE` is set to. Manual runs always use the template you chose in the UI for that request.
+
+### Template gallery & previews
+
+- Scroll to **Template Gallery** on <http://localhost:8080> to see live previews, font stacks, and palette swatches for every template before you run a batch.
+- The gallery images are generated on demand through `/demo/<templateId>` (e.g. `/demo/matrix`). Feel free to embed those routes elsewhere if you want dynamic previews in docs or admin panels.
+- To tweak typography, drop additional `.ttf` files into `assets/fonts/` and add them to `src/poster.js` (font registration) or directly override the `fonts` object in `src/templates.js` for each preset.
+
+### Manual overrides & automation
+
+- Use the checkboxes in the run form to render the same feed across multiple templates in one go, and adjust the **Posts per run** field without modifying `.env`.
+- Automation hooks:
+  - `GET /api/posters` &mdash; returns the latest run metadata plus ready-to-serve image URLs.
+  - `POST /api/run` &mdash; trigger a job with a JSON body such as:
+    ```json
+    {
+      "templates": ["midnight", "matrix"],
+      "maxPosts": 3
+    }
+    ```
+    The endpoint blocks until rendering finishes and replies with the applied templates/count. It responds with HTTP `409` if another run is already in progress.
+- The `/demo/<templateId>` previews (used by the gallery) are regular PNG responses you can embed in wikis, Slack, or dashboards.
+- Set `SLACK_WEBHOOK_URL` (and/or `WEBHOOK_URL`) to receive JSON summaries for every batch automatically.
+
+### Run history & bundles
+
+- Download the freshest poster set (all PNGs + a `summary.json`) via <http://localhost:8080/bundle/latest.zip>.
+- The dashboard now highlights recent runs (template mix, poster counts, average quality) so reviewers can audit progress at a glance.
+
 
 ## How It Works
 

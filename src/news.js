@@ -12,6 +12,7 @@ const parser = new Parser({
 const userAgent = 'tech-poster-node/0.1 (+https://github.com/machander-byte/AI-Automation)';
 
 const DEFAULT_BULLET = 'Fresh insights coming soon.';
+const TITLE_NORMALIZER = /[^a-z0-9]+/gi;
 
 function parsePublished(dateLike) {
   if (!dateLike) return new Date();
@@ -73,6 +74,32 @@ function buildBullets(text, fallback = DEFAULT_BULLET) {
   return bullets.length ? bullets : [fallback];
 }
 
+function normalizeTitleKey(title) {
+  if (!title) return '';
+  return title.trim().toLowerCase().replace(TITLE_NORMALIZER, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function analyzeArticle({ text, bullets, publishedAt, duplicateOf }) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const wordCount = words.length;
+  const bulletCount = bullets.length;
+  const hoursOld = Number(((Date.now() - publishedAt.getTime()) / 3600000).toFixed(1));
+  const recencyScore = Math.max(0, Math.min(1, 1 - hoursOld / config.lookbackHours));
+  const bulletScore = Math.min(1, bulletCount / 4);
+  const coverageScore = Math.min(1, wordCount / 600);
+  const duplicatePenalty = duplicateOf ? 0.2 : 0;
+  const rawQuality = bulletScore * 0.4 + coverageScore * 0.3 + recencyScore * 0.3 - duplicatePenalty;
+  const qualityScore = Number(Math.max(0, Math.min(1, rawQuality)).toFixed(2));
+  return {
+    wordCount,
+    bulletCount,
+    hoursOld,
+    recencyScore: Number(recencyScore.toFixed(2)),
+    coverageScore: Number(coverageScore.toFixed(2)),
+    qualityScore,
+  };
+}
+
 export async function fetchFreshNews(limit = config.maxPosts) {
   const cutoff = Date.now() - config.lookbackHours * 60 * 60 * 1000;
 
@@ -80,9 +107,17 @@ export async function fetchFreshNews(limit = config.maxPosts) {
     await Promise.all(config.rssFeeds.map((feed) => fetchFeedEntries(feed)))
   ).flat();
 
+  const titleTracker = new Map();
+
   const deduped = new Map();
   for (const entry of allEntries) {
     if (!entry.url || !entry.title) continue;
+    const titleKey = normalizeTitleKey(entry.title);
+    if (titleKey && titleTracker.has(titleKey)) {
+      entry.duplicateOf = titleTracker.get(titleKey);
+    } else if (titleKey) {
+      titleTracker.set(titleKey, entry.url);
+    }
     const existing = deduped.get(entry.url);
     if (!existing || existing.publishedAt < entry.publishedAt) {
       deduped.set(entry.url, entry);
@@ -101,10 +136,16 @@ export async function fetchFreshNews(limit = config.maxPosts) {
     const articleText = await fetchArticleText(entry.url);
     const finalText = articleText || entry.snippet || entry.title;
     const bullets = buildBullets(finalText);
-
+    const analysis = analyzeArticle({
+      text: finalText,
+      bullets,
+      publishedAt: entry.publishedAt,
+      duplicateOf: entry.duplicateOf,
+    });
     const record = {
       ...entry,
       bullets,
+      analysis,
     };
     picks.push(record);
     markSeen(entry.url);
