@@ -55,6 +55,9 @@ const config = {
     'http://feeds.arstechnica.com/arstechnica/index/',
     'https://www.wired.com/feed/rss',
   ]),
+  linkedinClientId: process.env.LINKEDIN_CLIENT_ID || '',
+  linkedinClientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
+  linkedinRedirectUri: process.env.LINKEDIN_REDIRECT_URI || '',
 };
 
 export default config;

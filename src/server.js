@@ -5,17 +5,31 @@ import archiver from 'archiver';
 import config from './config.js';
 import { triggerManualRun, startScheduler } from './scheduler.js';
 import { renderPoster } from './poster.js';
-import { state } from './state.js';
+import {
+  state,
+  getLinkedInAuth,
+  setLinkedInAuth,
+  clearLinkedInAuth,
+  isLinkedInConnected,
+} from './state.js';
 import {
   getTemplatePreviewContent,
   isValidTemplateId,
   listTemplateOptions,
   normalizeTemplateId,
 } from './templates.js';
+import {
+  buildAuthUrl,
+  createStateToken,
+  exchangeCodeForToken,
+  fetchProfile as fetchLinkedInProfile,
+  sharePosterToFeed,
+} from './linkedin.js';
 
 const fsPromises = fs.promises;
 
 const app = express();
+let pendingLinkedInState = null;
 
 app.set('view engine', 'ejs');
 app.set('views', path.resolve(config.projectRoot, 'views'));
@@ -50,6 +64,8 @@ function parseMaxPosts(value) {
 app.get('/', (req, res) => {
   const templateOptions = listTemplateOptions();
   const templateMap = new Map(templateOptions.map((option) => [option.id, option]));
+  const linkedinAuth = getLinkedInAuth();
+  const linkedinConnected = isLinkedInConnected();
   const selectedTemplates =
     state.lastTemplates && state.lastTemplates.length
       ? state.lastTemplates
@@ -65,6 +81,7 @@ app.get('/', (req, res) => {
     lastResults: state.lastResults.map((item) => ({
       ...item,
       generatedAtDisplay: formatDateTime(item.generatedAt),
+      filename: item.imagePath ? path.basename(item.imagePath) : null,
       imageHref: `/generated/${path.basename(item.imagePath)}`,
     })),
     templateOptions,
@@ -78,6 +95,8 @@ app.get('/', (req, res) => {
       ...run,
       completedAtDisplay: formatDateTime(run.completedAt),
     })),
+    linkedinConnected,
+    linkedinProfile,
   });
 });
 
@@ -193,6 +212,85 @@ app.post('/api/run', async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+});
+
+app.get('/auth/linkedin', (req, res) => {
+  try {
+    const stateToken = createStateToken();
+    pendingLinkedInState = stateToken;
+    const url = buildAuthUrl(stateToken);
+    res.redirect(url);
+  } catch (error) {
+    console.error('Failed to start LinkedIn auth', error);
+    res.status(400).send(error.message || 'LinkedIn auth not configured.');
+  }
+});
+
+app.get('/auth/linkedin/callback', async (req, res) => {
+  const { code, state: stateParam, error, error_description: errorDescription } = req.query;
+  if (error) {
+    res.status(400).send(`LinkedIn auth error: ${errorDescription || error}`);
+    return;
+  }
+  if (!code || !stateParam || stateParam !== pendingLinkedInState) {
+    res.status(400).send('Invalid LinkedIn auth state.');
+    return;
+  }
+  pendingLinkedInState = null;
+  try {
+    const token = await exchangeCodeForToken(code);
+    const profile = await fetchLinkedInProfile(token.accessToken);
+    setLinkedInAuth({
+      accessToken: token.accessToken,
+      expiresAt: Date.now() + (token.expiresIn || 0) * 1000,
+      profile,
+      owner: profile?.id ? `urn:li:person:${profile.id}` : null,
+    });
+    res.redirect('/');
+  } catch (err) {
+    console.error('LinkedIn callback failed', err);
+    res.status(500).send('Failed to complete LinkedIn login.');
+  }
+});
+
+app.post('/api/upload', async (req, res) => {
+  if (!isLinkedInConnected()) {
+    res.status(401).json({ message: 'Connect LinkedIn first.' });
+    return;
+  }
+  const linkedinAuth = getLinkedInAuth();
+  const filename = (req.body?.filename || '').trim();
+  if (!filename) {
+    res.status(400).json({ message: 'Missing filename.' });
+    return;
+  }
+  const poster = state.lastResults.find((item) => item.imagePath && path.basename(item.imagePath) === filename);
+  if (!poster) {
+    res.status(404).json({ message: 'Poster not found.' });
+    return;
+  }
+  if (!fs.existsSync(poster.imagePath)) {
+    res.status(410).json({ message: 'Poster file is missing on disk.' });
+    return;
+  }
+  try {
+    const shareText = `${poster.title} — via ${config.brandName}`;
+    const response = await sharePosterToFeed({
+      accessToken: linkedinAuth.accessToken,
+      owner: linkedinAuth.owner,
+      filePath: poster.imagePath,
+      text: shareText,
+    });
+    res.status(200).json({ ok: true, asset: response.asset, share: response.share });
+  } catch (error) {
+    console.error('LinkedIn upload failed', error);
+    if (error.status === 401 || error.status === 403) {
+      clearLinkedInAuth();
+      res.status(401).json({ message: 'LinkedIn token expired. Please reconnect.' });
+      return;
+    }
+    res.status(500).json({ message: 'Upload failed', details: error.message });
   }
 });
 

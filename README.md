@@ -37,8 +37,18 @@ Create a `.env` (copy from `.env.example`) to override defaults:
 | `SCHEDULE_CRON` | Cron expression with seconds | `0 30 8 * * *` |
 | `TIMEZONE` | App timezone for scheduling | `Asia/Kolkata` |
 | `RSS_FEEDS` | Comma-separated list of RSS URLs | Verge, Ars Technica, Wired |
+| `LINKEDIN_CLIENT_ID` | LinkedIn app Client ID for OAuth | _none_ |
+| `LINKEDIN_CLIENT_SECRET` | LinkedIn app Client Secret for OAuth | _none_ |
+| `LINKEDIN_REDIRECT_URI` | OAuth callback (must match your LinkedIn app) | `http://localhost:8787/callback` |
 
 The dedupe store uses SQLite (`better-sqlite3`). Delete `data/seen.db` if you want to reprocess everything.
+
+### LinkedIn login & uploads
+
+1. In your LinkedIn developer app, add `http://localhost:8787/callback` (or your deployed domain's `/auth/linkedin/callback`) as an authorized redirect URL. Enable the scopes **r_liteprofile**, **r_emailaddress**, and **w_member_social**.
+2. Set `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, and `LINKEDIN_REDIRECT_URI` in `.env`.
+3. Restart the server, click **Connect LinkedIn** in the UI, and finish the sign-in. The session stores the access token in memory only (restart to clear).
+4. Each generated poster now shows an **Upload to LinkedIn** button. Click it to post the image to your personal feed using the authenticated account.
 
 ### Template presets
 

@@ -63,6 +63,12 @@
         transform: translateY(-1px);
         box-shadow: 0 10px 25px rgba(65, 105, 225, 0.2);
       }
+      .upload-btn {
+        background: linear-gradient(135deg, #0a66c2, #5390d9);
+      }
+      .upload-btn.danger {
+        background: linear-gradient(135deg, #d14343, #f87171);
+      }
       .template-picker {
         display: flex;
         flex-wrap: wrap;
@@ -115,6 +121,16 @@
         margin: 0;
         color: #7482ad;
         font-size: 0.95rem;
+      }
+      .linkedin-card {
+        padding: 1rem;
+        border-radius: 16px;
+        border: 1px solid rgba(10, 102, 194, 0.35);
+        background: rgba(10, 102, 194, 0.08);
+        max-width: 360px;
+      }
+      .linkedin-card .status {
+        color: #a3c5ff;
       }
       section.template-gallery {
         margin: 1.5rem 0 0;
@@ -349,6 +365,24 @@
             <a class="download-link" href="/bundle/latest.zip">Download latest bundle</a>
           <% } %>
         </div>
+        <div class="linkedin-card">
+          <h3>LinkedIn</h3>
+          <% if (linkedinConnected) { %>
+            <p class="status">
+              Connected as
+              <strong><%= linkedinProfile?.localizedFirstName || 'LinkedIn user' %></strong>.
+              You can upload posters directly to your feed.
+            </p>
+            <button type="button" class="upload-btn" onclick="window.location.href='/auth/linkedin'">
+              Reconnect
+            </button>
+          <% } else { %>
+            <p class="status">Not connected. Sign in with LinkedIn to upload posters.</p>
+            <button type="button" class="upload-btn" onclick="window.location.href='/auth/linkedin'">
+              Connect LinkedIn
+            </button>
+          <% } %>
+        </div>
       </div>
       <p class="template-note">
         Active templates: <strong><%= selectedTemplateLabels.join(', ') %></strong>
@@ -437,6 +471,19 @@
                   <a href="<%= poster.imageHref %>" target="_blank" rel="noopener">Download poster</a>
                 <% } %>
               </footer>
+              <% if (poster.imageHref && poster.filename) { %>
+                <div class="actions" style="margin-top:0.5rem;">
+                  <button
+                    type="button"
+                    class="upload-btn"
+                    data-filename="<%= poster.filename %>"
+                    <% if (!linkedinConnected) { %>disabled<% } %>
+                  >
+                    <% if (linkedinConnected) { %>Upload to LinkedIn<% } else { %>Connect LinkedIn to upload<% } %>
+                  </button>
+                  <span class="status upload-status" data-filename="<%= poster.filename %>"></span>
+                </div>
+              <% } %>
               <% if (poster.imageHref) { %>
                 <img src="<%= poster.imageHref %>" alt="<%= poster.title %>" loading="lazy" />
               <% } %>
@@ -445,5 +492,39 @@
         <% } %>
       </section>
     </main>
+    <script>
+      (function() {
+        const buttons = document.querySelectorAll('.upload-btn[data-filename]');
+        if (!buttons.length) return;
+        buttons.forEach((button) => {
+          button.addEventListener('click', async () => {
+            const filename = button.dataset.filename;
+            const statusEl = document.querySelector('.upload-status[data-filename=\"' + filename + '\"]');
+            button.disabled = true;
+            const originalText = button.textContent;
+            button.textContent = 'Uploading...';
+            if (statusEl) statusEl.textContent = '';
+            try {
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename }),
+              });
+              const data = await response.json().catch(() => ({}));
+              if (!response.ok) {
+                const message = data?.message || 'Upload failed';
+                throw new Error(message);
+              }
+              button.textContent = 'Uploaded';
+              if (statusEl) statusEl.textContent = 'Posted to LinkedIn.';
+            } catch (error) {
+              button.textContent = originalText;
+              button.disabled = false;
+              if (statusEl) statusEl.textContent = error.message || 'Upload failed';
+            }
+          });
+        });
+      })();
+    </script>
   </body>
 </html>

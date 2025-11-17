@@ -7,6 +7,12 @@ export const state = {
   lastTemplates: [],
   lastMaxPosts: null,
   history: [],
+  linkedin: {
+    accessToken: null,
+    expiresAt: null,
+    profile: null,
+    owner: null,
+  },
 };
 
 export function setRunning(flag) {
@@ -32,4 +38,32 @@ export function setResults(results, metadata = {}) {
     averageQuality: metadata.summary?.averageQuality ?? null,
   });
   state.history = state.history.slice(0, HISTORY_LIMIT);
+}
+
+export function setLinkedInAuth(payload) {
+  state.linkedin = {
+    accessToken: payload.accessToken || null,
+    expiresAt: payload.expiresAt || null,
+    profile: payload.profile || null,
+    owner: payload.owner || null,
+  };
+}
+
+export function clearLinkedInAuth() {
+  state.linkedin = {
+    accessToken: null,
+    expiresAt: null,
+    profile: null,
+    owner: null,
+  };
+}
+
+export function getLinkedInAuth() {
+  return state.linkedin;
+}
+
+export function isLinkedInConnected() {
+  if (!state.linkedin?.accessToken) return false;
+  if (!state.linkedin.expiresAt) return true;
+  return state.linkedin.expiresAt > Date.now();
 }
